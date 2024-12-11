@@ -70,5 +70,12 @@ def process_log_file(content: str) -> Dict[str, Any]:
         # Eliminar variable temporal
         if 'current_down_time' in station_data:
             del station_data['current_down_time']
+
+    # Ordenar estaciones por cantidad de caídas
+    stations = dict(sorted(
+        stations.items(), 
+        key=lambda item: item[1]['cantidad_caidas'], 
+        reverse=True
+    ))
     
     return stations

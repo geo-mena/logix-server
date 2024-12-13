@@ -1,15 +1,28 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from app.services.analyze_terminals import analyze_terminals_dates 
+from app.services.analyze_terminals import extract_date_from_header
+from app.services.analyze_terminals import analyze_terminals_dates
 from app.services.log_processor import process_log_file
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import logging
 
 # Configurar logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log', encoding='utf-8'),
+        logging.StreamHandler() 
+    ]
+)
+
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Log Processor Service")
+app = FastAPI(
+    title="Log Processor Service",
+    description="Servicio para procesar archivos de log y analizar terminales",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,6 +67,7 @@ async def analyze_terminals(file: UploadFile = File(...)):
     try:
         content = await file.read()
         decoded_content = content.decode('utf-8')
+        reference_date = extract_date_from_header(decoded_content)
         
         # Analizar el contenido
         results = analyze_terminals_dates(decoded_content)

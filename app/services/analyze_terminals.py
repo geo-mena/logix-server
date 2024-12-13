@@ -5,14 +5,20 @@ import re
 # función para extraer la fecha del encabezado
 def extract_date_from_header(content: str) -> datetime:
     """Extrae la fecha del encabezado del documento."""
+    months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 
+              'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
+
     lines = content.splitlines()
     for line in lines:
         # Buscar la línea que contiene la fecha
-        if 'DECEMBER' in line:
-            # Usar regex para extraer la fecha
-            match = re.search(r'(\w+ \d{1,2}, \d{4})', line)
+        if any(month in line for month in months):
+
+            normalized_line = ' '.join(line.split())
+            match = re.search(r'(\w+ \d{1,2}, \d{4})', normalized_line)
+
             if match:
                 try:
+                    date_str = ' '.join(match.group(1).split())
                     return datetime.strptime(match.group(1), '%B %d, %Y')
                 except ValueError as e:
                     raise ValueError(f"Error parsing date from header: {e}")
@@ -28,6 +34,7 @@ def analyze_terminals_dates(content: str) -> Dict:
     
     try:
         reference_date = extract_date_from_header(content)
+        file_date = reference_date.strftime('%Y-%m-%d')
         today_str = reference_date.strftime('%y%m%d')
         tomorrow_str = (reference_date + timedelta(days=1)).strftime('%y%m%d')
 
@@ -81,6 +88,9 @@ def analyze_terminals_dates(content: str) -> Dict:
 
         counts["TOTAL DE TERMINALES"] = len(terminals)
 
-        return counts
+        return {
+            "counts": counts,
+            "file_date": file_date 
+        }
     except Exception as e:
         raise ValueError(f"Error en el análisis: {str(e)}")

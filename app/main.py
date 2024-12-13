@@ -75,10 +75,11 @@ async def analyze_terminals(file: UploadFile = File(...)):
         return {
             "success": True,
             "data": {
-                "counts": results,
+                "counts": results["counts"],
                 "details": {
                     "date_analyzed": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    "filename": file.filename
+                    "filename": file.filename,
+                    "file_date": results["file_date"]
                 }
             }
         }
